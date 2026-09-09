@@ -11,9 +11,7 @@
     cross:      { icon: '✛',  label: 'Sapu Silang',      drop: 0.02,  max: 1 },
     bomb:       { icon: '💣', label: 'Bom Area',          drop: 0.035, max: 2 },
   };
-  // Total peluang dapat ability per klik (bukan per petak) ≈ 14.5%.
-  // Ability menjinakkan ranjau di area sapuannya (ranjau hilang, angka
-  // sekitar dihitung ulang) lalu membuka petak di area itu — aman dipakai.
+ 
 
   const boardEl = document.getElementById('board');
   const mineCountEl = document.getElementById('mineCount');
@@ -23,6 +21,13 @@
   const toastEl = document.getElementById('toast');
   const diffButtons = document.querySelectorAll('.diff-btn');
   const abilityBarEl = document.getElementById('abilityBar');
+  const startScreenEl = document.getElementById('startScreen');
+  const gameConsoleEl = document.getElementById('gameConsole');
+  const startForm = document.getElementById('startForm');
+  const playerNameEl = document.getElementById('playerName');
+  const clickCountEl = document.getElementById('clickCount');
+  const leaderboardTitleEl = document.getElementById('leaderboardTitle');
+  const leaderboardListEl = document.getElementById('leaderboardList');
 
   let level = LEVELS.easy;
   let grid = [];          // {mine, revealed, flagged, count}
@@ -36,12 +41,56 @@
   let inventory = {};     // { horizontal: 2, vertical: 0, ... }
   let armedAbility = null;
   let toastTimeout = null;
+  let playerName = '';
+  let clickCount = 0;
+  const LEADERBOARD_KEY = 'penjinakRanjauLeaderboard';
 
   function pad(n) { return String(n).padStart(3, '0'); }
 
   function updateHud() {
     mineCountEl.textContent = pad(Math.max(0, remainingMines - flagsUsed));
     timerEl.textContent = pad(Math.min(999, seconds));
+    clickCountEl.textContent = pad(clickCount);
+  }
+
+  function getLeaderboard() {
+    try {
+      return JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '{}');
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function renderLeaderboard() {
+    const scores = getLeaderboard()[Object.keys(LEVELS).find(key => LEVELS[key] === level)] || [];
+    leaderboardTitleEl.textContent = `Leaderboard ${level === LEVELS.easy ? 'Mudah' : level === LEVELS.medium ? 'Sedang' : 'Sulit'}`;
+    leaderboardListEl.innerHTML = '';
+    if (scores.length === 0) {
+      leaderboardListEl.className = 'leaderboard-empty';
+      leaderboardListEl.innerHTML = '<li>Belum ada skor. Jadilah yang pertama!</li>';
+      return;
+    }
+    leaderboardListEl.className = '';
+    scores.forEach(score => {
+      const item = document.createElement('li');
+      item.innerHTML = `<strong>${escapeHtml(score.name)}</strong><span>${score.clicks} klik</span>`;
+      leaderboardListEl.appendChild(item);
+    });
+  }
+
+  function escapeHtml(value) {
+    return value.replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+  }
+
+  function saveScore() {
+    const levelKey = Object.keys(LEVELS).find(key => LEVELS[key] === level);
+    const leaderboard = getLeaderboard();
+    const scores = leaderboard[levelKey] || [];
+    scores.push({ name: playerName, clicks: clickCount, time: seconds });
+    scores.sort((a, b) => a.clicks - b.clicks || a.time - b.time);
+    leaderboard[levelKey] = scores.slice(0, 10);
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
+    renderLeaderboard();
   }
 
   function startTimer() {
@@ -303,8 +352,9 @@
     armedAbility = null;
     renderInventory();
     if (won) {
+      saveScore();
       restartBtn.textContent = '😎';
-      setStatus('Selesai! Semua petak aman sudah terbuka.', 'win');
+      setStatus(`Selesai, ${playerName}! ${clickCount} klik tercatat.`, 'win');
     } else {
       restartBtn.textContent = '💥';
       revealAllMines(hitR, hitC);
@@ -314,6 +364,7 @@
 
   function onLeftClick(e) {
     if (gameOver) return;
+    clickCount++;
     const r = Number(e.currentTarget.dataset.r);
     const c = Number(e.currentTarget.dataset.c);
 
@@ -351,6 +402,7 @@
   function onRightClick(e) {
     e.preventDefault();
     if (gameOver) return;
+    clickCount++;
     const r = Number(e.currentTarget.dataset.r);
     const c = Number(e.currentTarget.dataset.c);
     const cellData = grid[r][c];
@@ -373,6 +425,7 @@
     seconds = 0;
     flagsUsed = 0;
     revealedCount = 0;
+    clickCount = 0;
     remainingMines = level.mines;
     firstClick = true;
     gameOver = false;
@@ -384,7 +437,17 @@
     updateHud();
     render();
     renderInventory();
+    renderLeaderboard();
   }
+
+  startForm.addEventListener('submit', event => {
+    event.preventDefault();
+    playerName = playerNameEl.value.trim();
+    if (!playerName) return;
+    startScreenEl.classList.add('hidden');
+    gameConsoleEl.classList.remove('hidden');
+    newGame();
+  });
 
   restartBtn.addEventListener('click', newGame);
 
@@ -397,5 +460,5 @@
     });
   });
 
-  newGame();
+  renderLeaderboard();
 })();
