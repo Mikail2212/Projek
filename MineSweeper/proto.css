@@ -278,6 +278,17 @@ h1 {
   color: var(--text-dim);
   font-size: 0.68rem;
 }
+.reset-score-btn {
+  background: transparent;
+  border: 0;
+  color: var(--mine);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+  margin-top: 8px;
+  padding: 0;
+}
+.reset-score-btn:hover { color: #ff958c; }
 .leaderboard ol {
   color: var(--text-dim);
   font-size: 0.78rem;

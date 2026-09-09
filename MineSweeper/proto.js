@@ -28,6 +28,7 @@
   const clickCountEl = document.getElementById('clickCount');
   const leaderboardTitleEl = document.getElementById('leaderboardTitle');
   const leaderboardListEl = document.getElementById('leaderboardList');
+  const resetScoresBtn = document.getElementById('resetScoresBtn');
 
   let level = LEVELS.easy;
   let grid = [];          // {mine, revealed, flagged, count}
@@ -55,10 +56,37 @@
 
   function getLeaderboard() {
     try {
-      return JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '{}');
+      const leaderboard = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '{}');
+      const normalized = normalizeLeaderboard(leaderboard);
+      if (JSON.stringify(normalized) !== JSON.stringify(leaderboard)) {
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(normalized));
+      }
+      return normalized;
     } catch (error) {
       return {};
     }
+  }
+
+  function normalizeLeaderboard(leaderboard) {
+    const normalized = {};
+    Object.keys(LEVELS).forEach(levelKey => {
+      const bestByName = new Map();
+      (Array.isArray(leaderboard[levelKey]) ? leaderboard[levelKey] : []).forEach(score => {
+        if (!score || typeof score.name !== 'string' || !Number.isFinite(score.clicks)) return;
+        const name = score.name.trim();
+        if (!name) return;
+        const normalizedName = name.toLocaleLowerCase();
+        const currentBest = bestByName.get(normalizedName);
+        const candidate = { name, clicks: score.clicks, time: Number.isFinite(score.time) ? score.time : 0 };
+        if (!currentBest || candidate.clicks < currentBest.clicks || (candidate.clicks === currentBest.clicks && candidate.time < currentBest.time)) {
+          bestByName.set(normalizedName, candidate);
+        }
+      });
+      normalized[levelKey] = Array.from(bestByName.values())
+        .sort((a, b) => a.clicks - b.clicks || a.time - b.time)
+        .slice(0, 10);
+    });
+    return normalized;
   }
 
   function renderLeaderboard() {
@@ -85,11 +113,9 @@
   function saveScore() {
     const levelKey = Object.keys(LEVELS).find(key => LEVELS[key] === level);
     const leaderboard = getLeaderboard();
-    const scores = leaderboard[levelKey] || [];
-    scores.push({ name: playerName, clicks: clickCount, time: seconds });
-    scores.sort((a, b) => a.clicks - b.clicks || a.time - b.time);
-    leaderboard[levelKey] = scores.slice(0, 10);
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
+    leaderboard[levelKey] = (leaderboard[levelKey] || []).concat({ name: playerName, clicks: clickCount, time: seconds });
+    const normalized = normalizeLeaderboard(leaderboard);
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(normalized));
     renderLeaderboard();
   }
 
@@ -450,6 +476,13 @@
   });
 
   restartBtn.addEventListener('click', newGame);
+
+  resetScoresBtn.addEventListener('click', () => {
+    if (!confirm('Reset semua papan skor?')) return;
+    localStorage.removeItem(LEADERBOARD_KEY);
+    renderLeaderboard();
+    showToast('Papan skor sudah direset.');
+  });
 
   diffButtons.forEach(btn => {
     btn.addEventListener('click', () => {
