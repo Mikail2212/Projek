@@ -1,0 +1,270 @@
+:root {
+  --bg: #14181a;
+  --panel: #1d2326;
+  --panel-edge: #2c3438;
+  --cell: #263035;
+  --cell-hover: #2e3a40;
+  --cell-revealed: #10151a;
+  --grid-line: #0a0d0f;
+  --led: #ff3b30;
+  --led-dim: #3a0f0c;
+  --accent: #ffb020;
+  --text: #dbe4e8;
+  --text-dim: #7c8b91;
+  --flag: #ffb020;
+  --mine: #ff5b4d;
+  --c1: #5aa9ff;
+  --c2: #57c785;
+  --c3: #ff6b6b;
+  --c4: #a985ff;
+  --c5: #ffb020;
+  --c6: #4bd1c9;
+  --c7: #e8e8e8;
+  --c8: #9aa7ab;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% -10%, #202a2e 0%, var(--bg) 55%);
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 60px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+
+.subtitle {
+  color: var(--text-dim);
+  font-size: 0.92rem;
+  margin: 0 0 22px;
+}
+
+.console {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 20px 45px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0d1113;
+  border: 1px solid #05070800;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.led-display {
+  font-family: 'VT323', monospace;
+  font-size: 2.1rem;
+  letter-spacing: 4px;
+  color: var(--led);
+  background: #1a0705;
+  padding: 2px 10px;
+  border-radius: 4px;
+  min-width: 84px;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(255,59,48,0.55);
+  user-select: none;
+}
+
+.led-display.off { color: var(--led-dim); text-shadow: none; }
+
+.face-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid #364046;
+  background: linear-gradient(180deg, #2b3439, #1a2124);
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+.face-btn:hover { background: linear-gradient(180deg, #313b41, #1e262a); }
+.face-btn:active { transform: scale(0.93); }
+
+.difficulty {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.diff-btn {
+  flex: 1;
+  padding: 8px 6px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: #171d20;
+  border: 1px solid var(--panel-edge);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.diff-btn:hover { color: var(--text); border-color: #4a565c; }
+.diff-btn.active {
+  color: #10151a;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+#board {
+  display: grid;
+  gap: 3px;
+  background: var(--grid-line);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #05070a;
+}
+
+.cell {
+  width: 30px;
+  height: 30px;
+  background: var(--cell);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.08s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.cell:hover:not(.revealed) { background: var(--cell-hover); }
+
+.cell.revealed {
+  background: var(--cell-revealed);
+  cursor: default;
+  box-shadow: none;
+}
+
+.cell.flagged { color: var(--flag); font-size: 1rem; }
+.cell.mine { background: var(--mine); }
+.cell.mine-hit { background: var(--mine); box-shadow: 0 0 0 2px #ffdcd8 inset; }
+
+.cell.n1 { color: var(--c1); }
+.cell.n2 { color: var(--c2); }
+.cell.n3 { color: var(--c3); }
+.cell.n4 { color: var(--c4); }
+.cell.n5 { color: var(--c5); }
+.cell.n6 { color: var(--c6); }
+.cell.n7 { color: var(--c7); }
+.cell.n8 { color: var(--c8); }
+
+.status-line {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  min-height: 18px;
+  letter-spacing: 0.01em;
+}
+.status-line.win { color: var(--c2); }
+.status-line.lose { color: var(--mine); }
+
+.hint {
+  margin-top: 18px;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+@media (max-width: 420px) {
+  .cell { width: 26px; height: 26px; font-size: 0.86rem; }
+}
+
+/* --- Ability system --- */
+.ability-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ability-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px 7px;
+  background: #171d20;
+  border: 1px solid var(--panel-edge);
+  border-radius: 9px;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.15s ease;
+  position: relative;
+}
+.ability-btn:hover:not(:disabled) { border-color: #4a565c; background: #1b2226; }
+.ability-btn.armed {
+  border-color: var(--accent);
+  background: #2a2312;
+  box-shadow: 0 0 0 1px var(--accent), 0 0 14px -2px rgba(255,176,32,0.55);
+}
+.ability-btn.empty { opacity: 0.35; cursor: default; }
+.ability-btn:disabled { cursor: default; }
+
+.ability-icon { font-size: 1.25rem; line-height: 1; }
+.ability-count {
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+.ability-btn.armed .ability-count { color: var(--accent); }
+
+.cell.targetable { outline: 1px dashed rgba(255,176,32,0.25); outline-offset: -1px; }
+.cell.targetable:hover:not(.revealed) {
+  background: #3a2f14;
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.toast {
+  position: fixed;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #1d2326;
+  border: 1px solid var(--panel-edge);
+  color: var(--text);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  box-shadow: 0 12px 30px -10px rgba(0,0,0,0.6);
+  z-index: 10;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

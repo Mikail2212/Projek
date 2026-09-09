@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penjinak Ranjau</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="proto.css">
+</head>
+<body>
+
+  <h1>Penjinak Ranjau</h1>
+  <p class="subtitle">Buka petak, hindari ranjau, tandai yang mencurigakan.</p>
+
+  <div class="console">
+    <div class="difficulty">
+      <button class="diff-btn active" data-level="easy">Mudah 9×9</button>
+      <button class="diff-btn" data-level="medium">Sedang 12×12</button>
+      <button class="diff-btn" data-level="hard">Sulit 16×16</button>
+    </div>
+
+    <div class="hud">
+      <div class="led-display" id="mineCount">010</div>
+      <button class="face-btn" id="restartBtn" title="Main lagi">🙂</button>
+      <div class="led-display" id="timer">000</div>
+    </div>
+
+    <div class="ability-bar" id="abilityBar"></div>
+
+    <div id="board"></div>
+    <div class="status-line" id="statusLine">&nbsp;</div>
+  </div>
+
+  <p class="hint">Klik kiri untuk membuka petak. Klik kanan (atau tekan lama di HP) untuk memasang/melepas bendera.<br>
+  Sesekali kamu dapat <strong>ability</strong> (stok terbatas) klik ikonnya lalu klik kotak target untuk menjinakkan ranjau di area itu sekaligus membuka petaknya.</p>
+
+  <div class="toast" id="toast"></div>
+
+<script src="proto.js"></script>
+</body>
+</html>
